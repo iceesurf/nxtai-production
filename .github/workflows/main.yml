@@ -1,0 +1,242 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # =====================================================
+  # JOB 1: Testes e Qualidade
+  # =====================================================
+  test:
+    name: Testes e Qualidade
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Instalar dependências
+      run: npm ci
+    
+    - name: Executar linter
+      run: npm run lint
+    
+    - name: Executar testes
+      run: npm test
+    
+    - name: Verificar vulnerabilidades
+      run: npm audit --production
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  # =====================================================
+  # JOB 2: Build
+  # =====================================================
+  build:
+    name: Build de Produção
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+    
+    - name: Instalar dependências
+      run: npm ci
+    
+    - name: Criar arquivo de ambiente
+      run: |
+        echo "NODE_ENV=production" > .env.production
+        echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env.production
+        echo "FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}" >> .env.production
+        echo "FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}" >> .env.production
+        echo "FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}" >> .env.production
+        echo "FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}" >> .env.production
+        echo "FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}" >> .env.production
+    
+    - name: Build do projeto
+      run: npm run build
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-files
+        path: |
+          public/
+          functions/
+          firebase.json
+          .firebaserc
+        retention-days: 7
+
+  # =====================================================
+  # JOB 3: Deploy Staging
+  # =====================================================
+  deploy-staging:
+    name: Deploy para Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-files
+    
+    - name: Deploy para Firebase Staging
+      uses: w9jds/firebase-action@master
+      with:
+        args: deploy --only hosting:staging --project staging
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+    
+    - name: Notificar Slack
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Deploy Staging concluído!'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()
+
+  # =====================================================
+  # JOB 4: Deploy Produção
+  # =====================================================
+  deploy-production:
+    name: Deploy para Produção
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-files
+    
+    - name: Deploy para Firebase Production
+      uses: w9jds/firebase-action@master
+      with:
+        args: deploy --project production
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+    
+    - name: Limpar cache Cloudflare
+      run: |
+        curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+          -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data '{"purge_everything":true}'
+    
+    - name: Criar Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        body: |
+          Deploy automático para produção
+          
+          ## Mudanças
+          - Veja os commits para detalhes
+          
+          ## Deploy
+          - URL: https://dnxtai.com
+          - Ambiente: Produção
+          - Build: #${{ github.run_number }}
+        draft: false
+        prerelease: false
+    
+    - name: Notificar equipe
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: |
+          🚀 Deploy Produção Concluído!
+          URL: https://dnxtai.com
+          Version: v${{ github.run_number }}
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()
+
+  # =====================================================
+  # JOB 5: Testes Pós-Deploy
+  # =====================================================
+  post-deploy-tests:
+    name: Testes Pós-Deploy
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    
+    - name: Instalar Lighthouse CI
+      run: npm install -g @lhci/cli
+    
+    - name: Executar Lighthouse
+      run: |
+        lhci autorun \
+          --collect.url=https://dnxtai.com \
+          --collect.url=https://dnxtai.com/solucoes \
+          --collect.url=https://dnxtai.com/planos \
+          --assert.preset=lighthouse:recommended \
+          --assert.assertions.categories:performance=off \
+          --assert.assertions.categories:pwa=off
+    
+    - name: Teste de saúde da API
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://api.dnxtai.com/health)
+        if [ $response -eq 200 ]; then
+          echo "API está saudável"
+        else
+          echo "API retornou status $response"
+          exit 1
+        fi
+    
+    - name: Validar SSL
+      run: |
+        echo | openssl s_client -servername dnxtai.com -connect dnxtai.com:443 2>/dev/null | openssl x509 -noout -dates

@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "nxtai-production",
+    "production": "nxt-ai-2025-prod"
+  },
+  "targets": {},
+  "etags": {}
+}
