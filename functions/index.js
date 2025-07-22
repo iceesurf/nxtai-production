@@ -10,23 +10,23 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // Configurar SendGrid
-// Certifique-se de configurar a chave no ambiente do Firebase:
-// firebase functions:config:set sendgrid.key="SUA_CHAVE_API"
 if (functions.config().sendgrid && functions.config().sendgrid.key) {
     sgMail.setApiKey(functions.config().sendgrid.key);
 }
 
 // Rate limiter para formulário de contato
 const contactLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 5, // limite de 5 requisições
+    windowMs: 15 * 60 * 1000,
+    max: 5,
     message: 'Muitas tentativas. Tente novamente em 15 minutos.'
 });
 
 // =====================================================
 // 1. FUNÇÃO: Processar Formulário de Contato
 // =====================================================
-exports.processContactForm = functions.https.onRequest((req, res) => {
+exports.processContactForm = functions
+    .runWith({ invoker: 'public' })
+    .https.onRequest((req, res) => {
     return cors(req, res, () => {
         contactLimiter(req, res, async () => {
             if (req.method !== 'POST') {
@@ -60,8 +60,6 @@ exports.processContactForm = functions.https.onRequest((req, res) => {
 
                 const leadRef = await db.collection('leads').add(leadData);
 
-                // As operações de email e notificação são "fire-and-forget" para não atrasar a resposta ao usuário.
-                // Opcional: Adicionar a um Pub/Sub para maior resiliência.
                 sendTeamNotificationEmail(leadData, leadRef.id);
                 sendConfirmationEmail(leadData);
                 sendWhatsAppNotification(leadData.phone, leadData.name);
@@ -81,11 +79,12 @@ exports.processContactForm = functions.https.onRequest((req, res) => {
     });
 });
 
-
 // =====================================================
 // 2. FUNÇÃO: Webhook WhatsApp
 // =====================================================
-exports.whatsappWebhook = functions.https.onRequest(async (req, res) => {
+exports.whatsappWebhook = functions
+    .runWith({ invoker: 'public' })
+    .https.onRequest(async (req, res) => {
     const webhookToken = functions.config().whatsapp ? functions.config().whatsapp.webhook_token : null;
 
     if (req.method === 'GET') {
@@ -130,11 +129,12 @@ exports.whatsappWebhook = functions.https.onRequest(async (req, res) => {
     return res.status(405).send('Method Not Allowed');
 });
 
-
 // =====================================================
 // 4. FUNÇÃO: Gerar Sitemap Dinâmico
 // =====================================================
-exports.generateSitemap = functions.https.onRequest(async (req, res) => {
+exports.generateSitemap = functions
+    .runWith({ invoker: 'public' })
+    .https.onRequest(async (req, res) => {
     try {
         const pages = [
             { url: '/', priority: 1.0, changefreq: 'weekly' },
@@ -164,7 +164,6 @@ exports.generateSitemap = functions.https.onRequest(async (req, res) => {
         return res.status(500).send('Erro ao gerar sitemap');
     }
 });
-
 
 // =====================================================
 // FUNÇÕES AUXILIARES
@@ -233,7 +232,6 @@ async function sendWhatsAppNotification(phone, name) {
 
 
 async function addToEmailList(email, name) {
-    // Implementação futura para adicionar a uma lista de marketing
     console.log(`Adicionando ${email} (${name}) à lista de email marketing.`);
 }
 
