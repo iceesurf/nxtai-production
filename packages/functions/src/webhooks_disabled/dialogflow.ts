@@ -1,7 +1,7 @@
-import { Request, Response } from 'firebase-functions';
+import { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 import { PubSub } from '@google-cloud/pubsub';
-import * as cors from 'cors';
+import cors from 'cors';
 
 const corsHandler = cors({ origin: true });
 const pubsub = new PubSub();

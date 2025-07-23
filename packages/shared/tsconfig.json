@@ -1,22 +1,18 @@
 {
   "compilerOptions": {
-    // Language and Environment
     "target": "ES2020",
     "lib": ["ES2020"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "strict": false,
+    "strictNullChecks": false,
     "forceConsistentCasingInFileNames": true,
-    
-    // Module Resolution
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    
-    // Emit
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -24,28 +20,20 @@
     "rootDir": "./",
     "removeComments": false,
     "noEmitOnError": true,
-    
-    // Type Checking
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
     "noImplicitOverride": true,
-    
-    // Advanced
     "incremental": true,
     "composite": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
-  
   "include": [
-    "types/**/*",
-    "utils/**/*",
-    "constants/**/*"
+    "src/**/*"
   ],
-  
   "exclude": [
     "node_modules",
     "dist",

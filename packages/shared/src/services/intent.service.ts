@@ -12,21 +12,21 @@ export interface Intent {
 }
 
 export interface TrainingPhrase {
-  id?: string;
+  id?: string | null;
   parts: TextPart[];
-  repeatCount?: number;
+  repeatCount?: number | null;
 }
 
 export interface TextPart {
   text: string;
-  parameterId?: string;
+  parameterId?: string | null;
 }
 
 export interface Parameter {
   id: string;
   entityType: string;
   required?: boolean;
-  redact?: boolean;
+  redact?: boolean | null;
   defaultValue?: any;
 }
 

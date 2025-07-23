@@ -7,8 +7,8 @@ import {
   UserGroupIcon,
   ChartBarIcon,
   ClockIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   PlusIcon,
   ArrowRightIcon,
   ExclamationTriangleIcon,
@@ -209,9 +209,9 @@ const DashboardHome: React.FC = () => {
                 stat.change >= 0 ? 'text-green-500' : 'text-red-500'
               }`}>
                 {stat.change >= 0 ? (
-                  <TrendingUpIcon className="h-4 w-4 mr-1" />
+                  <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                 ) : (
-                  <TrendingDownIcon className="h-4 w-4 mr-1" />
+                  <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
                 )}
                 {Math.abs(stat.change)}%
               </div>

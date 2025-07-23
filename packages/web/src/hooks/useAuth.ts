@@ -7,6 +7,9 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
   sendEmailVerification,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
 } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { auth } from '../config/firebase';
@@ -187,6 +190,51 @@ export const useAuth = () => {
     }
   }, [setLoading, setError, clearError, setUser]);
 
+  // Login com Google
+  const loginWithGoogle = useCallback(async () => {
+    setLoading(true);
+    clearError();
+
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      const result = await signInWithPopup(auth, provider);
+      toast.success('Login com Google realizado com sucesso!');
+      return result.user;
+    } catch (error: any) {
+      const errorMessage = getAuthErrorMessage(error.code);
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading, setError, clearError]);
+
+  // Login com GitHub
+  const loginWithGithub = useCallback(async () => {
+    setLoading(true);
+    clearError();
+
+    try {
+      const provider = new GithubAuthProvider();
+      provider.addScope('user:email');
+      
+      const result = await signInWithPopup(auth, provider);
+      toast.success('Login com GitHub realizado com sucesso!');
+      return result.user;
+    } catch (error: any) {
+      const errorMessage = getAuthErrorMessage(error.code);
+      setError(errorMessage);
+      toast.error(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading, setError, clearError]);
+
   // Deletar conta
   const deleteAccount = useCallback(async () => {
     setLoading(true);
@@ -216,6 +264,8 @@ export const useAuth = () => {
     isAuthenticated,
     error,
     login,
+    loginWithGoogle,
+    loginWithGithub,
     signup,
     logout,
     resetPassword,

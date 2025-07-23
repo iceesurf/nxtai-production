@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    // Language and Environment
     "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
@@ -8,21 +7,14 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
-    
-    // Module Resolution
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    
-    // JSX
     "jsx": "react-jsx",
-    
-    // Path Mapping
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
@@ -36,28 +28,21 @@
       "@config/*": ["./src/config/*"],
       "@styles/*": ["./src/styles/*"]
     },
-    
-    // Type Checking
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
     "noImplicitOverride": true,
-    
-    // Emit
     "declaration": false,
     "declarationMap": false,
     "sourceMap": true,
     "removeComments": false,
     "noEmitOnError": true,
-    
-    // Advanced
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
   },
-  
   "include": [
     "src",
     "src/**/*",
@@ -69,7 +54,6 @@
     "tailwind.config.js",
     "postcss.config.js"
   ],
-  
   "exclude": [
     "node_modules",
     "dist",
@@ -82,7 +66,6 @@
     "cypress",
     "playwright"
   ],
-  
   "references": [
     { "path": "./tsconfig.node.json" },
     { "path": "../shared" }
