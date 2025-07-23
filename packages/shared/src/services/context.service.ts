@@ -132,7 +132,7 @@ export class ContextService {
       const variable: ContextVariable = {
         name,
         value,
-        type: options?.type || this.inferType(value),
+        type: (options?.type || this.inferType(value)) as 'string' | 'number' | 'boolean' | 'object' | 'array',
         lifespan: options?.lifespan,
         source: (options?.source as any) || 'system',
         createdAt: new Date(),
@@ -553,7 +553,11 @@ export class ContextService {
   private inferType(value: any): 'string' | 'number' | 'boolean' | 'object' | 'array' {
     if (Array.isArray(value)) return 'array';
     if (value === null || value === undefined) return 'string';
-    return typeof value as 'string' | 'number' | 'boolean' | 'object';
+    const type = typeof value;
+    if (type === 'string' || type === 'number' || type === 'boolean') {
+      return type;
+    }
+    return 'object';
   }
 
   async clearContext(sessionId: string): Promise<void> {

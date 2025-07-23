@@ -9,14 +9,15 @@
     "test": "jest"
   },
   "dependencies": {
+    "@google-cloud/pubsub": "^5.1.0",
+    "axios": "^1.6.0",
     "firebase": "^10.14.1",
-    "firebase-admin": "^11.11.0",
-    "axios": "^1.6.0"
+    "firebase-admin": "^11.11.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
+    "@types/jest": "^29.0.0",
     "@types/node": "^18.0.0",
     "jest": "^29.0.0",
-    "@types/jest": "^29.0.0"
+    "typescript": "^5.0.0"
   }
 }

@@ -346,7 +346,7 @@ export class BackupService {
           .collection('conversation')
           .get();
         
-        session.conversation = conversationSnapshot.docs.map(doc => doc.data());
+        (session as any).conversation = conversationSnapshot.docs.map(doc => doc.data());
       }
       
       return sessions;

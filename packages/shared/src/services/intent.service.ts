@@ -116,9 +116,7 @@ export class IntentService {
         parameters: response.parameters?.map(param => ({
           id: param.id!,
           entityType: param.entityType!,
-          required: param.required,
-          redact: param.redact,
-          defaultValue: param.defaultValue
+          redact: param.redact
         })) || [],
         priority: response.priority,
         isFallback: response.isFallback,
@@ -152,9 +150,7 @@ export class IntentService {
         parameters: intent.parameters?.map(param => ({
           id: param.id!,
           entityType: param.entityType!,
-          required: param.required,
-          redact: param.redact,
-          defaultValue: param.defaultValue
+          redact: param.redact
         })) || [],
         priority: intent.priority,
         isFallback: intent.isFallback,

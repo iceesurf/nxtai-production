@@ -170,3 +170,59 @@ export interface ApiResponse<T> {
     totalPages: number;
   };
 }
+
+// Dialogflow Types
+export interface EntityType {
+  name?: string;
+  displayName: string;
+  kind: 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP';
+  autoExpansionMode: 'AUTO_EXPANSION_MODE_DEFAULT' | 'AUTO_EXPANSION_MODE_UNSPECIFIED';
+  entities: Entity[];
+  excludedPhrases: ExcludedPhrase[];
+  enableFuzzyExtraction?: boolean;
+  redact?: boolean;
+}
+
+export interface Entity {
+  value: string;
+  synonyms: string[];
+}
+
+export interface ExcludedPhrase {
+  value: string;
+}
+
+export interface Intent {
+  name: string;
+  displayName: string;
+  trainingPhrases: TrainingPhrase[];
+  parameters: Parameter[];
+  priority?: number;
+  isFallback?: boolean;
+  labels?: { [key: string]: string };
+}
+
+export interface TrainingPhrase {
+  id?: string;
+  parts: TrainingPhrasePart[];
+  repeatCount?: number;
+}
+
+export interface TrainingPhrasePart {
+  text: string;
+  parameterId?: string;
+}
+
+export interface Parameter {
+  id: string;
+  entityType: string;
+  redact?: boolean;
+}
+
+export interface IParameter {
+  id: string;
+  entityType: string;
+  redact?: boolean;
+  required?: boolean;
+  defaultValue?: any;
+}

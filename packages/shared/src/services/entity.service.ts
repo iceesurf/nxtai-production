@@ -81,7 +81,7 @@ export class EntityService {
       const [response] = await this.client.getEntityType(request);
 
       return {
-        name: response.name,
+        name: response.name || undefined,
         displayName: response.displayName!,
         kind: response.kind as 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP',
         autoExpansionMode: response.autoExpansionMode as 'AUTO_EXPANSION_MODE_DEFAULT' | 'AUTO_EXPANSION_MODE_UNSPECIFIED',
@@ -92,8 +92,8 @@ export class EntityService {
         excludedPhrases: response.excludedPhrases?.map(phrase => ({
           value: phrase.value!
         })) || [],
-        enableFuzzyExtraction: response.enableFuzzyExtraction,
-        redact: response.redact
+        enableFuzzyExtraction: response.enableFuzzyExtraction || undefined,
+        redact: response.redact || undefined
       };
 
     } catch (error) {
@@ -110,7 +110,7 @@ export class EntityService {
       const [entityTypes] = await this.client.listEntityTypes(request);
       
       return entityTypes.map(entityType => ({
-        name: entityType.name,
+        name: entityType.name || undefined,
         displayName: entityType.displayName!,
         kind: entityType.kind as 'KIND_MAP' | 'KIND_LIST' | 'KIND_REGEXP',
         autoExpansionMode: entityType.autoExpansionMode as 'AUTO_EXPANSION_MODE_DEFAULT' | 'AUTO_EXPANSION_MODE_UNSPECIFIED',
@@ -121,8 +121,8 @@ export class EntityService {
         excludedPhrases: entityType.excludedPhrases?.map(phrase => ({
           value: phrase.value!
         })) || [],
-        enableFuzzyExtraction: entityType.enableFuzzyExtraction,
-        redact: entityType.redact
+        enableFuzzyExtraction: entityType.enableFuzzyExtraction || undefined,
+        redact: entityType.redact || undefined
       }));
 
     } catch (error) {
