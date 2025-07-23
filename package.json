@@ -1,20 +1,39 @@
 {
-  "name": "nxtai-production",
+  "name": "nxt-ai-platform",
   "version": "1.0.0",
   "description": "NXT.AI - Plataforma de Automação Inteligente",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "firebase emulators:start",
-    "build": "echo 'Build completed'",
-    "test": "echo 'Tests passed'",
-    "deploy": "firebase deploy"
+    "dev": "npm run dev:web",
+    "dev:web": "npm run dev --workspace=@nxtai/web",
+    "dev:mobile": "npm run start --workspace=@nxtai/mobile",
+    "dev:functions": "npm run serve --workspace=@nxtai/functions",
+    "build": "npm run build:all",
+    "build:all": "npm run build:shared && npm run build:web && npm run build:functions",
+    "build:shared": "npm run build --workspace=@nxtai/shared",
+    "build:web": "npm run build --workspace=@nxtai/web",
+    "build:functions": "npm run build --workspace=@nxtai/functions",
+    "deploy:dev": "firebase use dev && firebase deploy",
+    "deploy:stg": "firebase use stg && firebase deploy",
+    "deploy:prod": "firebase use prod && firebase deploy",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces"
   },
   "dependencies": {
     "firebase": "^10.14.1",
     "firebase-admin": "^11.11.0",
     "firebase-functions": "^4.5.0"
   },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

@@ -1,7 +1,9 @@
 {
   "projects": {
-    "default": "nxtai-production",
-    "production": "nxt-ai-2025-prod"
+    "default": "nxt-ai-dev",
+    "dev": "nxt-ai-dev", 
+    "stg": "nxt-ai-stg",
+    "prod": "projeto-nxtai"
   },
   "targets": {},
   "etags": {}

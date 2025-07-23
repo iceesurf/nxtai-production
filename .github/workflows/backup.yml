@@ -1,0 +1,78 @@
+name: Backup Production Database
+
+on:
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to backup'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
+          - stg
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: prod
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+      
+      - name: Verify authentication
+        run: gcloud auth list
+      
+      - name: Create Firestore backup
+        run: |
+          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          BACKUP_BUCKET="gs://$PROJECT_ID-backups"
+          DATE=$(date +"%Y%m%d_%H%M%S")
+          BACKUP_PREFIX="firestore_backup_${DATE}"
+          
+          echo "Creating backup: $BACKUP_PREFIX"
+          gcloud firestore export $BACKUP_BUCKET/$BACKUP_PREFIX
+          
+          echo "Backup created successfully: $BACKUP_BUCKET/$BACKUP_PREFIX"
+      
+      - name: Cleanup old backups
+        run: |
+          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          BACKUP_BUCKET="gs://$PROJECT_ID-backups"
+          CUTOFF_DATE=$(date -d "30 days ago" +"%Y%m%d")
+          
+          echo "Cleaning up backups older than $CUTOFF_DATE"
+          
+          # List and remove old backups
+          gsutil ls $BACKUP_BUCKET/ | while read backup; do
+            BACKUP_DATE=$(echo $backup | grep -o '[0-9]\{8\}' | head -1)
+            if [[ "$BACKUP_DATE" < "$CUTOFF_DATE" ]]; then
+              echo "Removing old backup: $backup"
+              gsutil -m rm -r "$backup" || true
+            fi
+          done
+      
+      - name: Notify backup status
+        if: always()
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "🎉 Backup completed successfully!"
+          else
+            echo "❌ Backup failed!"
+            exit 1
+          fi

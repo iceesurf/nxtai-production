@@ -1,0 +1,77 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Função auxiliar para verificar autenticação
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Função para verificar se é admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             'admin' in request.auth.token.roles;
+    }
+    
+    // Função para verificar tamanho do arquivo (máximo 5MB para produção)
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+    
+    // Função para verificar tipos de arquivo permitidos
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/(jpeg|jpg|png|gif|webp)');
+    }
+    
+    function isValidDocumentType() {
+      return request.resource.contentType.matches('application/(pdf|msword|vnd.openxmlformats-officedocument.wordprocessingml.document)') ||
+             request.resource.contentType.matches('text/(plain|csv)');
+    }
+    
+    // Uploads de usuários (avatares, anexos)
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      (request.auth.uid == userId || isAdmin()) &&
+                      isValidSize() &&
+                      (isValidImageType() || isValidDocumentType());
+    }
+    
+    // Assets da empresa (logos, imagens do sistema)
+    match /assets/{allPaths=**} {
+      allow read: if true; // Público para assets da empresa
+      allow write: if isAuthenticated() && isAdmin() && 
+                      isValidSize() && isValidImageType();
+    }
+    
+    // Uploads de campanhas
+    match /campaigns/{campaignId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                      isValidSize() &&
+                      (isValidImageType() || isValidDocumentType());
+    }
+    
+    // Uploads temporários (processamento)
+    match /temp/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if isAuthenticated() && 
+                      request.auth.uid == userId &&
+                      isValidSize() &&
+                      (isValidImageType() || isValidDocumentType());
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Backups (apenas leitura para admins)
+    match /backups/{allPaths=**} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if false; // Apenas via Cloud Functions
+    }
+    
+    // Logs e relatórios
+    match /reports/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Apenas via Cloud Functions
+    }
+  }
+}
