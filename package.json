@@ -20,9 +20,22 @@
     "deploy:stg": "firebase use stg && firebase deploy",
     "deploy:prod": "firebase use prod && firebase deploy",
     "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces"
+    "test:web": "npm run test --workspace=@nxtai/web",
+    "test:functions": "npm run test --workspace=@nxtai/functions",
+    "lint": "npm run lint --workspaces",
+    "lint:web": "npm run lint --workspace=@nxtai/web",
+    "lint:functions": "npm run lint --workspace=@nxtai/functions",
+    "typecheck": "npm run typecheck --workspaces",
+    "typecheck:web": "npm run typecheck --workspace=@nxtai/web",
+    "typecheck:shared": "npm run typecheck --workspace=@nxtai/shared",
+    "clean": "npm run clean --workspaces",
+    "clean:all": "npm run clean && rimraf node_modules",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,md}'",
+    "format:check": "prettier --check '**/*.{js,jsx,ts,tsx,json,css,md}'",
+    "postinstall": "npm run build:shared"
   },
   "dependencies": {
+    "anthropic": "^0.0.0",
     "firebase": "^10.14.1",
     "firebase-admin": "^11.11.0",
     "firebase-functions": "^4.5.0"
@@ -31,7 +44,10 @@
     "@types/node": "^18.0.0",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
-    "typescript": "^5.0.0"
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0",
+    "concurrently": "^8.0.0",
+    "cross-env": "^7.0.0"
   },
   "engines": {
     "node": ">=20.0.0"

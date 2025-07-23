@@ -7,11 +7,11 @@
 ```bash
 # Fork o repositório
 # Clone seu fork
-git clone https://github.com/seu-usuario/nxtai-production.git
+git clone https://github.com/iceesurf/nxtai-production.git
 cd nxtai-production
 
 # Adicione o repositório original como upstream
-git remote add upstream https://github.com/nxtai/nxtai-production.git
+git remote add upstream https://github.com/iceesurf/nxtai-production.git
 
 # Instale as dependências
 npm install
