@@ -1,27 +1,25 @@
 import { https } from 'firebase-functions';
-import { auth, firestore } from 'firebase-admin';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import * as admin from 'firebase-admin';
 
 // Initialize Firebase Admin if not already done
-if (!auth.apps.length) {
-  auth.initializeApp();
+if (!admin.apps.length) {
+  admin.initializeApp();
 }
 
-const db = getFirestore();
-const adminAuth = getAuth();
+const db = admin.firestore();
+const adminAuth = admin.auth();
 
 // Get current user data
-export const getCurrentUser = https.onCall(async (data, context) => {
+export const getCurrentUser = https.onCall(async (data: any, context: any) => {
   try {
-    if (!context.auth) {
+    if (!context?.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     const userRecord = await adminAuth.getUser(context.auth.uid);
     
     // Get additional user data from Firestore if exists
-    const userDoc = await db.collection('users').doc(context.auth.uid).get();
+    const userDoc = await db.collection('users').doc(context.auth!.uid).get();
     const userData = userDoc.exists ? userDoc.data() : {};
 
     const user = {
@@ -56,7 +54,7 @@ export const getCurrentUser = https.onCall(async (data, context) => {
 });
 
 // Create new user with custom data
-export const signup = https.onCall(async (data, context) => {
+export const signup = https.onCall(async (data: any, context: any) => {
   try {
     const { email, password, displayName, phoneNumber } = data;
 
@@ -114,9 +112,9 @@ export const signup = https.onCall(async (data, context) => {
 });
 
 // Update user profile
-export const updateProfile = https.onCall(async (data, context) => {
+export const updateProfile = https.onCall(async (data: any, context: any) => {
   try {
-    if (!context.auth) {
+    if (!context?.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
@@ -128,10 +126,10 @@ export const updateProfile = https.onCall(async (data, context) => {
     if (phoneNumber !== undefined) updates.phoneNumber = phoneNumber;
 
     // Update Firebase Auth
-    await adminAuth.updateUser(context.auth.uid, updates);
+    await adminAuth.updateUser(context.auth!.uid, updates);
 
     // Update Firestore document
-    await db.collection('users').doc(context.auth.uid).update({
+    await db.collection('users').doc(context.auth!.uid).update({
       ...updates,
       name: displayName || undefined,
       updatedAt: new Date()
@@ -154,17 +152,17 @@ export const updateProfile = https.onCall(async (data, context) => {
 });
 
 // Delete user account
-export const deleteAccount = https.onCall(async (data, context) => {
+export const deleteAccount = https.onCall(async (data: any, context: any) => {
   try {
-    if (!context.auth) {
+    if (!context?.auth) {
       throw new https.HttpsError('unauthenticated', 'User must be authenticated');
     }
 
     // Delete from Firestore
-    await db.collection('users').doc(context.auth.uid).delete();
+    await db.collection('users').doc(context.auth!.uid).delete();
 
     // Delete from Firebase Auth
-    await adminAuth.deleteUser(context.auth.uid);
+    await adminAuth.deleteUser(context.auth!.uid);
 
     return {
       success: true,
