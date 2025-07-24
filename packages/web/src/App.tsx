@@ -26,7 +26,7 @@ import PublicRoute from './components/auth/PublicRoute';
 import LoadingSpinner from './components/shared/LoadingSpinner';
 
 // Hooks
-import { useAuth } from './hooks/useAuth';
+import { useAuthSimple as useAuth } from './hooks/useAuthSimple';
 
 // Styles
 import './styles/globals.css';
