@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -30,6 +30,8 @@ import {
   Cell
 } from 'recharts';
 import { useAuthStore } from '../store/authStore';
+import { useDashboardData, useRecentActivity } from '../hooks/useDashboardData';
+import { initializeFirestoreData } from '../data/seedData';
 
 // Mock data - replace with real API calls
 const mockStats = {
@@ -104,21 +106,23 @@ const DashboardHome: React.FC = () => {
   const { user } = useAuthStore();
   const [timeRange, setTimeRange] = useState('7d');
 
-  // Mock query - replace with real API
-  const { data: dashboardData, isLoading } = useQuery({
-    queryKey: ['dashboard', timeRange],
-    queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockStats;
-    }
-  });
+  // Initialize seed data on component mount
+  useEffect(() => {
+    initializeFirestoreData();
+  }, []);
 
-  const stats = [
+  // Fetch real dashboard data
+  const { data: dashboardData, isLoading } = useDashboardData(timeRange);
+  const { data: recentActivity } = useRecentActivity();
+
+  // Use real data or fallback to mock data
+  const statsData = dashboardData || mockStats;
+
+  const statsCards = [
     {
       title: 'Agentes Ativos',
-      value: mockStats.activeAgents,
-      total: mockStats.totalAgents,
+      value: statsData.activeAgents,
+      total: statsData.totalAgents,
       change: +12,
       icon: CpuChipIcon,
       color: 'bg-blue-600',
@@ -126,8 +130,8 @@ const DashboardHome: React.FC = () => {
     },
     {
       title: 'Conversas Ativas',
-      value: mockStats.activeConversations,
-      total: mockStats.totalConversations,
+      value: statsData.activeConversations,
+      total: statsData.totalConversations,
       change: +8,
       icon: ChatBubbleLeftRightIcon,
       color: 'bg-green-600',
@@ -135,7 +139,7 @@ const DashboardHome: React.FC = () => {
     },
     {
       title: 'Taxa de Satisfação',
-      value: `${mockStats.satisfactionRate}%`,
+      value: `${statsData.satisfactionRate}%`,
       change: +2.1,
       icon: ChartBarIcon,
       color: 'bg-purple-600',
@@ -143,7 +147,7 @@ const DashboardHome: React.FC = () => {
     },
     {
       title: 'Tempo Médio',
-      value: `${mockStats.avgResponseTime}s`,
+      value: `${statsData.avgResponseTime}s`,
       change: -0.5,
       icon: ClockIcon,
       color: 'bg-orange-600',
@@ -195,7 +199,7 @@ const DashboardHome: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+        {statsCards.map((stat, index) => (
           <div
             key={index}
             onClick={() => navigate(stat.href)}
@@ -315,18 +319,23 @@ const DashboardHome: React.FC = () => {
             </button>
           </div>
           <div className="space-y-4">
-            {mockRecentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-750 rounded-lg transition">
-                <div className={`p-2 bg-gray-700 rounded-lg ${activity.color}`}>
-                  <activity.icon className="h-4 w-4" />
+            {(recentActivity || mockRecentActivity).map((activity) => {
+              const IconComponent = activity.icon || ChatBubbleLeftRightIcon;
+              const iconColor = activity.color || 'text-blue-500';
+              
+              return (
+                <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-750 rounded-lg transition">
+                  <div className={`p-2 bg-gray-700 rounded-lg ${iconColor}`}>
+                    <IconComponent className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-medium">{activity.title}</p>
+                    <p className="text-gray-400 text-sm">{activity.description}</p>
+                    <p className="text-gray-500 text-xs mt-1">{activity.time}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-white font-medium">{activity.title}</p>
-                  <p className="text-gray-400 text-sm">{activity.description}</p>
-                  <p className="text-gray-500 text-xs mt-1">{activity.time}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

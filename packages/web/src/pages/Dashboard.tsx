@@ -1,20 +1,30 @@
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import DashboardSidebar from '../components/layout/DashboardSidebar';
+import DashboardHeader from '../components/layout/DashboardHeader';
+
 export default function Dashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold">Leads</h3>
-          <p className="text-2xl font-bold text-blue-600">--</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold">Conversas</h3>
-          <p className="text-2xl font-bold text-green-600">--</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold">Campanhas</h3>
-          <p className="text-2xl font-bold text-purple-600">--</p>
-        </div>
+    <div className="min-h-screen bg-gray-900">
+      {/* Sidebar */}
+      <DashboardSidebar 
+        sidebarOpen={sidebarOpen} 
+        setSidebarOpen={setSidebarOpen} 
+      />
+
+      {/* Main content */}
+      <div className="lg:pl-64">
+        {/* Header */}
+        <DashboardHeader 
+          setSidebarOpen={setSidebarOpen}
+        />
+
+        {/* Page content */}
+        <main className="p-6">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
