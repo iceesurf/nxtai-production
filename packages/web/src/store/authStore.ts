@@ -1,6 +1,30 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthUser, AuthState } from '@nxtai/shared';
+
+interface AuthUser {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  emailVerified: boolean;
+  phoneNumber?: string;
+  customClaims?: {
+    role?: string;
+    permissions?: string[];
+    tenantId?: string;
+  };
+  metadata: {
+    creationTime: string;
+    lastSignInTime: string;
+  };
+}
+
+interface AuthState {
+  user: AuthUser | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  error: string | null;
+}
 
 interface AuthStore extends AuthState {
   setUser: (user: AuthUser | null) => void;

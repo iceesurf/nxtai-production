@@ -30,7 +30,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Check role requirements
-  if (requiredRole && !requiredRole.includes(user.role)) {
+  if (requiredRole && user.customClaims?.role && !requiredRole.includes(user.customClaims.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-center">
@@ -52,7 +52,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Check permission requirements
   if (requiredPermission && user.customClaims?.permissions) {
     const hasPermission = requiredPermission.some(permission =>
-      user.customClaims.permissions.includes(permission)
+      user.customClaims?.permissions?.includes(permission)
     );
 
     if (!hasPermission) {

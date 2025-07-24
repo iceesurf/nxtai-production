@@ -46,7 +46,7 @@ export class UserService {
       if (params?.search) {
         const searchTerm = params.search.toLowerCase();
         return users.filter(user => 
-          user.displayName.toLowerCase().includes(searchTerm) ||
+          user.name.toLowerCase().includes(searchTerm) ||
           user.email.toLowerCase().includes(searchTerm)
         );
       }

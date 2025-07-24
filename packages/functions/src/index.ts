@@ -1,2 +1,7 @@
-// This file is intentionally left blank.
-// Cloud Functions are deployed from other files in this directory.
+// Export all Cloud Functions
+export { 
+  getCurrentUser, 
+  signup, 
+  updateProfile, 
+  deleteAccount 
+} from './auth';

@@ -1,6 +1,7 @@
 {
   "firebase_hosting": {
-    "deploymentHostingUrl": "https://nxtai-production.web.app"
+    "deploymentHostingUrl": "https://projeto-nxtai.web.app"
   },
-  "cloud_run_deploy": {}
+  "cloud_run_deploy": {},
+  "gemini_api": {}
 }

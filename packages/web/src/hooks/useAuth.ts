@@ -13,7 +13,35 @@ import {
 } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { auth } from '../config/firebase';
-import { AuthUser, SignupData, LoginCredentials } from '@nxtai/shared';
+interface AuthUser {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  emailVerified: boolean;
+  phoneNumber?: string;
+  customClaims?: {
+    role?: string;
+    permissions?: string[];
+    tenantId?: string;
+  };
+  metadata: {
+    creationTime: string;
+    lastSignInTime: string;
+  };
+}
+
+interface SignupData {
+  email: string;
+  password: string;
+  displayName: string;
+  phoneNumber?: string;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
 import { useAuthStore } from '../store/authStore';
 import { toast } from 'react-hot-toast';
 
@@ -44,8 +72,8 @@ export const useAuth = () => {
           const getCurrentUser = httpsCallable(functions, 'getCurrentUser');
           const response = await getCurrentUser();
           
-          if (response.data.success) {
-            setUser(response.data.data as AuthUser);
+          if ((response.data as any).success) {
+            setUser((response.data as any).data as AuthUser);
           }
         } else {
           setUser(null);
@@ -89,9 +117,9 @@ export const useAuth = () => {
       const signupFunction = httpsCallable(functions, 'signup');
       const response = await signupFunction(data);
       
-      if (response.data.success) {
+      if ((response.data as any).success) {
         toast.success('Conta criada com sucesso! Verifique seu email.');
-        return response.data.data;
+        return (response.data as any).data;
       } else {
         throw new Error('Signup failed');
       }
@@ -169,13 +197,13 @@ export const useAuth = () => {
       const updateProfileFunction = httpsCallable(functions, 'updateProfile');
       const response = await updateProfileFunction(data);
       
-      if (response.data.success) {
+      if ((response.data as any).success) {
         // Recarregar dados do usuário
         const getCurrentUser = httpsCallable(functions, 'getCurrentUser');
         const userResponse = await getCurrentUser();
         
-        if (userResponse.data.success) {
-          setUser(userResponse.data.data as AuthUser);
+        if ((userResponse.data as any).success) {
+          setUser((userResponse.data as any).data as AuthUser);
         }
         
         toast.success('Perfil atualizado com sucesso!');
@@ -244,7 +272,7 @@ export const useAuth = () => {
       const deleteAccountFunction = httpsCallable(functions, 'deleteAccount');
       const response = await deleteAccountFunction();
       
-      if (response.data.success) {
+      if ((response.data as any).success) {
         await signOut(auth);
         toast.success('Conta deletada com sucesso!');
       }
