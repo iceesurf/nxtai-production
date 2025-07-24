@@ -10,8 +10,9 @@
         "firebase-debug.*.log"
       ],
       "predeploy": [
-        "rm -rf ./shared-pkg",
-        "cp -R "$PROJECT_ROOT/packages/shared" ./shared-pkg"
+        "rm -rf packages/functions/shared-pkg",
+        "cp -R packages/shared packages/functions/shared-pkg",
+        "npm --prefix packages/functions run build"
       ]
     }
   ],
